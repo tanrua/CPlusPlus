@@ -12,9 +12,9 @@ template <class T> class Board {
 	vector<vector<T> > d_board;
 public:
 	//Default to a square board of 26 characters
-	Board(int rows=26, int cols=26) : d_rows(rows), d_cols(cols) {
-		for (int i=0; i<rows; i++){
-			d_board.push_back(vector<T>(cols));
+	Board(int cols=26, int rows=26) : d_rows(rows), d_cols(cols) {
+		for (int i=0; i<cols; i++){
+			d_board.push_back(vector<T>(rows));
 		}
 	};
 
@@ -30,20 +30,14 @@ public:
 	};
 
 	void placeTile(char x, int y, T item){
-		vector<vector<T> >::iterator itX; //iterator to a vector of T
-		vector<T>::iterator itY; //iterator to a vector of T
-
-		int i = 0; // x counter.
-		int j = 0; // y counter 
 		d_board[charMap(x)][y] = item;
-		cout << "Set item: " << d_board[charMap(x)][y] << endl;
 	};
 
 	T getTileAt(char x, int y){
-		cout << "item: " << d_board[charMap(x)][y] << endl;
 		return d_board[charMap(x)][y];
 	};
 
+	// up to 4 in the list, clockwise with no wrap.
 	vector<T> getAdjacent(char x, int y){
 		// * * * * *
 		// * * u * *
@@ -53,28 +47,37 @@ public:
 
 		vector<T> adjacent; 
 		//up
-		if(charMap(y) > 0){
+		if( (y > 0) && adjCheck(getTileAt(x, (y-1))) ){
 			adjacent.push_back(getTileAt(x, (y-1)));
 		} 
+		//right
+		if( (charMap(x) < d_cols) && adjCheck(getTileAt((x+1), y)) ) {
+			adjacent.push_back(getTileAt((x+1), y));
+		}
 		//down
-		if(charMap(y) < 26) {
+		if ( (y < d_rows) && adjCheck(getTileAt(x, (y+1))) )  {
 			adjacent.push_back(getTileAt(x, (y+1)));
 		}
 		//left 
-		if(charMap(x) > 0) {
+		if( (charMap(x) > 0) && adjCheck(getTileAt((x-1), y)) ) {
 			adjacent.push_back(getTileAt((x-1), y));
 		}
-		//right
-		if(charMap(x) < 26) {
-			adjacent.push_back(getTileAt((x+1), y));
-		}
-
 		return adjacent;
-	}; // up to 4 in the list
+	}; 
 
 	void print() {
-
+		for(int j=0; j<d_rows; j++){
+			for(int i=0; i<d_cols; i++){
+				cout << d_board[i][j] << " ";
+			}
+			cout << endl;
+		}
 	};
+
+	bool adjCheck(T item){
+		return item != 0;
+	};
+
 };
 
 #endif
