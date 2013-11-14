@@ -3,6 +3,7 @@
 
 #include <list>
 #include <vector>
+#include "group.h"
 
 using namespace std;
 
@@ -29,11 +30,11 @@ public:
 		return 0;
 	};
 
-	void placeTile(char x, int y, T item){
+	void placeTile(const char& x, const int& y, const T& item){
 		d_board[charMap(x)][y] = item;
 	};
 
-	T getTileAt(char x, int y){
+	T getTileAt(const char& x, const int& y){
 		return d_board[charMap(x)][y];
 	};
 
@@ -79,6 +80,7 @@ public:
 	};
 
 	bool adjCheck(T item){
+		// will turn to != T Group::getDummy();
 		return item != 0;
 	};
 
