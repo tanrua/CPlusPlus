@@ -50,18 +50,22 @@ public:
 		if( (y > 0) && adjCheck(getTileAt(x, (y-1))) ){
 			adjacent.push_back(getTileAt(x, (y-1)));
 		} 
+		
 		//right
 		if( (charMap(x) < d_cols) && adjCheck(getTileAt((x+1), y)) ) {
 			adjacent.push_back(getTileAt((x+1), y));
 		}
+		
 		//down
-		if ( (y < d_rows) && adjCheck(getTileAt(x, (y+1))) )  {
+		if ( (y+1 < d_rows)  && adjCheck(getTileAt(x, (y+1))) )  {
 			adjacent.push_back(getTileAt(x, (y+1)));
 		}
+		
 		//left 
 		if( (charMap(x) > 0) && adjCheck(getTileAt((x-1), y)) ) {
 			adjacent.push_back(getTileAt((x-1), y));
 		}
+
 		return adjacent;
 	}; 
 
