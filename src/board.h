@@ -19,7 +19,7 @@ public:
 		}
 	};
 
-	int charMap (char item){
+	int charMap (const char& item){
 		if ((item > 64)&&(item < 91)){
 			return item-65;
 		}
@@ -39,7 +39,7 @@ public:
 	};
 
 	// up to 4 in the list, clockwise with no wrap.
-	vector<T> getAdjacent(char x, int y){
+	vector<T> getAdjacent(const char& x, const int& y){
 		// * * * * *
 		// * * u * *
 		// * l x r *
@@ -53,8 +53,9 @@ public:
 		} 
 		
 		//right
-		if( (charMap(x) < d_cols) && adjCheck(getTileAt((x+1), y)) ) {
-			adjacent.push_back(getTileAt((x+1), y));
+		char right = x+1;
+		if( (charMap(right) < d_cols) && adjCheck(getTileAt(right, y)) ) {
+			adjacent.push_back(getTileAt((right), y));
 		}
 		
 		//down
@@ -62,9 +63,10 @@ public:
 			adjacent.push_back(getTileAt(x, (y+1)));
 		}
 		
-		//left 
-		if( (charMap(x) > 0) && adjCheck(getTileAt((x-1), y)) ) {
-			adjacent.push_back(getTileAt((x-1), y));
+		//left
+		char left = x-1;
+		if( (charMap(left) > 0) && adjCheck(getTileAt((left), y)) ) {
+			adjacent.push_back(getTileAt((left), y));
 		}
 
 		return adjacent;
