@@ -1,0 +1,59 @@
+/* Merge method Pseudocode
+ * 
+ * I don't know the C++ iterator syntax/deleting stuff... :(
+ *
+ */
+
+//Run after a move has been made
+
+void ensureMerge(Position pos, Player p) {
+  //get all adjacent tiles
+  vector<Position> adjacentTiles = getAdjacent(pos) ;
+  
+  if(adjacentTiles.size > 0) {
+  
+    //prepare to store adjacent groups
+    vector<Group> adjacentGroups ;
+    
+    //iterate through adjacent tiles
+    for each Position adj in adjacentTiles {
+      //get the group which contains that position
+      adjacentGroups.push_back(getGroup(adj)) ;
+    }
+    
+    //get the group for this tile (a new 1 tile group should have been created)
+    Group tempGroup = getGroup(pos) ;
+    
+    //sort largest to smallest
+    adjacentGroups.reverseSort() ;
+    
+    //get group iterator
+    Iterator<Group> groupIterator = adjacentGroups.begin() ;
+    
+    //get the largest group
+    Group largest = groupIterator.next() ;
+    
+    //largest group absorbs the new 1-tile group
+    largest.addAll(tempGroup) ;
+    
+    //delete the 1-elem group
+    <INSERT CODE TO DELETE tempGroup FROM EVERYWHERE HERE (??)>
+    
+    //iterate through remaining groups (recall we have saved the first as largest)
+    while(groupIterator.hasNext()) {
+      //next element
+      Group g = groupIterator.next() ;
+      
+      //merge with largest
+      largest.addAll(g);
+      
+      //delete
+      <INSERT CODE TO DELETE g FROM EVERYWHERE HERE (??)>
+    }
+    
+    //set the ID for the group... or whatever
+    largest.setPlayer(p);
+  
+  }
+
+}
