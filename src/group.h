@@ -12,10 +12,9 @@ template <class T> class Group {
         int d_size;
 		T d_label;
 		int d_age;
-		int d_owner; //each group belongs to a player. i.e. player '1', player '2', etc.
         set<pair<char, int > > tiles;
 public:
-		Group(T _label, int _owner, int _age=0, int _size=0): d_size(_size), d_label(_label), d_owner(_owner), d_age(_age), d_size(_size){};
+		Group(T _label, int _age=0, int _size=0): d_size(_size), d_label(_label), d_age(_age), d_size(_size){};
 
         //Not sure WTF this is supposed to do...
         T getDummy(){
@@ -66,6 +65,21 @@ public:
         //Return the label of this group
         T& getLabel() {
                 return d_label ;
+        }
+
+		//return the size of this group
+        void setSize(const int& _size) {
+                d_size=_size;
+        }
+
+		//return what turn the group was created on
+        void setAge(const int& _age) {
+			d_age=_age;
+        }
+
+        //Return the label of this group
+        void setLabel(const T& _label) {
+                d_label=_label;
         }
 
 };
