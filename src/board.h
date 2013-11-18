@@ -3,6 +3,7 @@
 
 #include <list>
 #include <vector>
+#include "group.h"
 
 using namespace std;
 
@@ -18,7 +19,7 @@ public:
 		}
 	};
 
-	int charMap (char item){
+	int charMap (const char& item){
 		if ((item > 64)&&(item < 91)){
 			return item-65;
 		}
@@ -29,16 +30,16 @@ public:
 		return 0;
 	};
 
-	void placeTile(char x, int y, T item){
+	void placeTile(const char& x, const int& y, const T& item){
 		d_board[charMap(x)][y] = item;
 	};
 
-	T getTileAt(char x, int y){
+	T getTileAt(const char& x, const int& y){
 		return d_board[charMap(x)][y];
 	};
 
 	// up to 4 in the list, clockwise with no wrap.
-	vector<T> getAdjacent(char x, int y){
+	vector<T> getAdjacent(const char& x, const int& y){
 		// * * * * *
 		// * * u * *
 		// * l x r *
@@ -50,18 +51,24 @@ public:
 		if( (y > 0) && adjCheck(getTileAt(x, (y-1))) ){
 			adjacent.push_back(getTileAt(x, (y-1)));
 		} 
+		
 		//right
-		if( (charMap(x) < d_cols) && adjCheck(getTileAt((x+1), y)) ) {
-			adjacent.push_back(getTileAt((x+1), y));
+		char right = x+1;
+		if( (charMap(right) < d_cols) && adjCheck(getTileAt(right, y)) ) {
+			adjacent.push_back(getTileAt((right), y));
 		}
+		
 		//down
-		if ( (y < d_rows) && adjCheck(getTileAt(x, (y+1))) )  {
+		if ( (y+1 < d_rows)  && adjCheck(getTileAt(x, (y+1))) )  {
 			adjacent.push_back(getTileAt(x, (y+1)));
 		}
-		//left 
-		if( (charMap(x) > 0) && adjCheck(getTileAt((x-1), y)) ) {
-			adjacent.push_back(getTileAt((x-1), y));
+		
+		//left
+		char left = x-1;
+		if( (charMap(left) > 0) && adjCheck(getTileAt((left), y)) ) {
+			adjacent.push_back(getTileAt((left), y));
 		}
+
 		return adjacent;
 	}; 
 
@@ -75,6 +82,7 @@ public:
 	};
 
 	bool adjCheck(T item){
+		// will turn to != T Group::getDummy();
 		return item != 0;
 	};
 
