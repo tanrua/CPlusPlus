@@ -12,13 +12,23 @@ template <class T> class Group {
         int d_size;
 		T d_label;
 		int d_age;
-        set<pair<char, int > > tiles;
+        set< pair<char, int > > d_tiles;
 public:
-		Group(T _label, int _age=0, int _size=0): d_size(_size), d_label(_label), d_age(_age), d_size(_size){};
+		Group(T _label, int _age=0, int _size=0): d_label(_label), d_age(_age), d_size(_size){};
 
         //Not sure WTF this is supposed to do...
         T getDummy(){
+			if (typeid(T) == typeid(int)) {
                 return 0;
+			} else if (typeid(T) == typeid(long)) {
+                return 0;
+			} else if (typeid(T) == typeid(unsigned char)) {
+                return '+';
+			} else if (typeid(T) == typeid(char)) {
+				return '+';
+			} else {
+				return 0;
+			}
         }
 
         //add the given tile to the group
@@ -28,8 +38,18 @@ public:
 
         //Add the given tile to the group
         void add(const pair<char, int>& tile){
-                tiles.insert(tile) ;
+                d_tiles.insert(tile) ;
                 d_size++ ;
+        }
+		              
+        //Copy over the contents of the other group
+        void addAll(const Group<T>& other) {
+			if (other.d_size > 0) {
+                   //iterate through other and add to this
+                   for (set<pair<char, int> >::iterator it=other.d_tiles.begin(); it!=other.d_tiles.end(); it++){
+                           add(*it) ;
+                   }
+           }
         }
 
         //Check if this group contains the given tile
@@ -38,19 +58,24 @@ public:
         }
 
         //Check if this group contains the given tile
-        bool contains(pair<char, int>& tile) {
-                return tiles.count(tile) ;
+        bool contains(const pair<char, int>& tile) {
+                return d_tiles.count(tile) ;
         }
-		              
-        //Copy over the contents of the other group
-        void addAll(const Group& other) {
-                if (other.size() > 0) {
-                        //iterate through other and add to this
-                        for (set<pair<char, int>::iterator it=other.tiles.begin(); it!=other.tiles.end(); ++it){
-                                add(*it) ;
-                        }
-                }
+
+		//remove the given tile from group
+		void remove(const unsigned char& col, const int& row){
+			remove(make_pair(col, row));
         }
+
+        //remove the given tile from groupp
+        void remove(const pair<char, int>& tile){
+			if (contains(tile)){
+				set<pair<char, int> >::iterator it = d_tiles.find(tile);
+				d_tiles.erase(tile);
+                d_size-- ;
+			}
+        }
+
 		/************************************ Getters and Setters *****************************************************/
 		//return the size of this group
         int& getSize() {
