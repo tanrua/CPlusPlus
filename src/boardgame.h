@@ -22,10 +22,8 @@ public:
 		Group<T> tmp(0,0,0);
 		d_dum = tmp.getDummy();
 		Group<T> dummy(d_dum,0,0);
-		//cout << "dummy: " << d_dum << endl;
-		pair<T, Group<T>*> dummyPair;
-		dummyPair = make_pair(d_dum, dummy);
-		//d_groups.insert(map<T, Group<T>*>::value_type(d_dum, dummy));
+
+		d_groups.insert(make_pair(d_dum, &dummy));
 	};
 
 	void playAt(Position& pos){
