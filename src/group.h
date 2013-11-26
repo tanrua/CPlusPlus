@@ -107,6 +107,10 @@ public:
                 d_label=_label;
         }
 
+		void print(){
+			cout << "Group '" << d_label << "' is of size: " << d_size << endl;
+		}
+
 };
 
 class Position {
