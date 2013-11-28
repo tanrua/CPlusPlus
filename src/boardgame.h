@@ -19,14 +19,13 @@ template <class T> class BoardGame {
 	vector<T> d_validGroups;
 	int d_turn;
 public:
-	BoardGame(int rows=0, int cols=0): d_rows(rows), d_cols(cols), d_turn(0) {
+	BoardGame(const int& rows=0, const int& cols=0): d_rows(rows), d_cols(cols), d_turn(0) {
 		//add empty dummy group
 		d_b = Board<T>(d_rows, d_cols);
 		Group<T> tmp(0,0,0);
 		d_dum = tmp.getDummy();
-		Group<T> dummy(d_dum,0,0);
 
-		d_groups.insert(make_pair(d_dum, &dummy));
+		d_groups.insert(make_pair(d_dum, new Group<T>(d_dum, 0, 0)));
 
 		//Initialize the valid groups. Default 10.
 		int maxValids=10;
@@ -55,28 +54,33 @@ public:
 		//NONE? This is an independent
 		if(adjacents.size() == 0){
 			//add tile to dummy group
-			Group<T>* grp = d_groups[d_dum];
-			grp->add(pos.getX(), pos.getY());
+			//Group<T>* grp = d_groups[d_dum];
+			d_groups[d_dum]->add(pos.getX(), pos.getY());
 			// place tile
 			d_b.placeTile(pos.getX(), pos.getY(), d_dum);
 		} else if(adjacents.size() == 1) {
 		//ONE: creating or increasing size
-			//is adj already a group?
-			//NO - aka dummy
+			//is adj part of the dummy group
 			if(adjacents[0] == d_dum){
-				//Create a new group if possible boolean on success
-				addNewGroup();
-				//Remove tile from dummy group 
-				Group<T>* dummy = d_groups.at(d_dum);
-				dummy->remove(pos.getX(), pos.getY());
-			}
-				
-				//YES
-				// increase group size by 1 (unless same group again)
+				//Create a new group if possible
+				if ( canAddNewGroup() ) {
+					//Remove tile from dummy group 
+					//Group<T>* dummy = d_groups.at(d_dum);
+					d_groups.at(d_dum)->remove(pos.getX(), pos.getY());
+					// place tile
+					d_b.placeTile(pos.getX(), pos.getY(), addNewGroup());
+					//add adjacent tile to new group
+				} else {
+					cout << "Error: No valid groups left to choose from" << endl;
+				}
+			} else { //YES
 				// assign tile to group
-			// place tile
-			d_b.placeTile(pos.getX(), pos.getY(), T);
-		} else {
+				d_groups.at(adjacents[0])->add(pos.getX(), pos.getY());
+				// place tile
+				d_b.placeTile(pos.getX(), pos.getY(), adjacents[0]);
+			}
+			
+		} /** else {
 		//2+: increase size or merge
 			//is there more than one group in the adj. list?
 				//NO
@@ -92,31 +96,35 @@ public:
 						//add all tiles from smaller group to larger group (placeTile for all elements with new group key)
 					//add the (now empty) smaller group back into the valid groups list
 			// place tile
-			d_b.placeTile(pos.getX(), pos.getY(), T);
+			d_b.placeTile(pos.getX(), pos.getY(), adjacents[0]);
 		}
-
+		**/
 		//a turn has taken place
 		d_turn++;
 	};
 
-	bool addNewGroup() {
+
+	bool canAddNewGroup() {
 		//can only do this if there are still valid groups left to add
 		if (d_validGroups.size() == 0){
 			return false;
 		} else {
+			return true;
+		}
+	}
+
+	T addNewGroup(){
 			//take the first element label.
 			T currentLabel = d_validGroups.at(0);
 
 			//make a new group of size 0 at this turn and add it to the map of groups
-			Group<T> tmp(currentLabel, d_turn, 0);
-			d_groups.insert(make_pair(currentLabel, &tmp));
+			d_groups.insert(make_pair(currentLabel, new Group<T>(currentLabel, d_turn, 0)));
 
 			//then remove the first element of valid groups so we don't use it again.
 			d_validGroups.erase(d_validGroups.begin());
 
-			return true;
-		}
-	}
+			return currentLabel;
+	};
 
 	bool removeUnusedGroup(T label) {
 		if (d_groups.find(label) == d_groups.end()){
@@ -126,7 +134,7 @@ public:
 			d_validGroups.push_back(label);
 			return true;
 		}
-	}
+	};
 
 	void printValids(){
 		cout << "Valid groups left to choose from are: ";
@@ -134,7 +142,7 @@ public:
 			cout << " '" << d_validGroups.at(i) << "' ";
 		}
 		cout << endl;
-	}
+	};
 
 	void printGroups(){
 		cout << "Groups in play are: ";
@@ -143,7 +151,13 @@ public:
 			    cout << " '" << it->first << "' ";
 			}
 		cout << endl;
-	}
+	};
+
+	friend ostream& operator<<( ostream& _os, const BoardGame& _b){
+		_os << "------------BOARD Turn: " << _b.d_turn << "------------" << endl;
+		_os << _b.d_b << "-------------------------------------" << endl;
+		return _os;
+	};
 };
 
 #endif
