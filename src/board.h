@@ -13,7 +13,7 @@ template <class T> class Board {
 	vector<vector<T> > d_board;
 public:
 	//Default to a square board of 26 characters
-	Board(int cols=26, int rows=26) : d_rows(rows), d_cols(cols) {
+	Board(const int& cols=26, const int& rows=26) : d_rows(rows), d_cols(cols) {
 		for (int i=0; i<cols; i++){
 			d_board.push_back(vector<T>(rows));
 		}
@@ -37,6 +37,7 @@ public:
 	T getTileAt(const char& x, const int& y){
 		return d_board[charMap(x)][y];
 	};
+
 
 	// up to 4 in the list, clockwise with no wrap.
 	vector<T> getAdjacent(const char& x, const int& y){
@@ -65,7 +66,7 @@ public:
 		
 		//left
 		char left = x-1;
-		if( (charMap(left) > 0) && adjCheck(getTileAt((left), y)) ) {
+		if( (charMap(left) >= 0) && adjCheck(getTileAt((left), y)) ) {
 			adjacent.push_back(getTileAt((left), y));
 		}
 
@@ -81,10 +82,39 @@ public:
 		}
 	};
 
+	friend ostream& operator<<( ostream& _os, const Board<T>& _b) {
+		for(int j=0; j<_b.d_rows; j++){
+			for(int i=0; i<_b.d_cols; i++){
+				_os << _b.d_board[i][j] << " ";
+			}
+			_os << endl;
+		}
+
+		return _os;
+	};
+
 	bool adjCheck(T item){
 		// will turn to != T Group::getDummy();
 		return item != 0;
 	};
+
+};
+
+class Position {
+	unsigned char d_x;
+	int d_y;
+public:
+	Position(unsigned char _x = 'a', int _y = 0): d_x(_x), d_y(_y){};
+	unsigned char getX(){ return d_x;};
+	int getY() { return d_y;};
+	void set(const unsigned char& _x, const int& _y){
+		d_x=_x;
+		d_y=_y;
+	};
+	void operator=(const Position& _p){
+		d_x = _p.d_x;
+		d_y = _p.d_y;
+	}
 
 };
 
