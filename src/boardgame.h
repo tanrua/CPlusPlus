@@ -6,6 +6,7 @@
 #include <iostream>
 #include <list>
 #include <map>
+#include <vector>
 
 using namespace std;
 
@@ -18,15 +19,16 @@ template <class T> class BoardGame {
 	//new valid groups will ALWAYS be increasing. even when they are unused.
 	vector<T> d_validGroups;
 	int d_turn;
-public:
-	BoardGame(const int& rows=0, const int& cols=0): d_rows(rows), d_cols(cols), d_turn(0) {
-		//add empty dummy group
-		d_b = Board<T>(d_rows, d_cols);
+
+	void groupInitialization(){
 		Group<T> tmp(0,0,0);
+		//There must be a better way to define Group::d_dummy exterally?
 		d_dum = tmp.getDummy();
 
-		d_groups.insert(make_pair(d_dum, new Group<T>(d_dum, 0, 0)));
+		d_groups.clear();
+		d_validGroups.clear();
 
+		d_groups.insert(make_pair(d_dum, new Group<T>(d_dum, 0, 0)));
 		//Initialize the valid groups. Default 10.
 		int maxValids=10;
 		if ((typeid(T) == typeid(char)) || (typeid(T) == typeid(unsigned char))) {
@@ -42,6 +44,13 @@ public:
 					label++;
 				}
 		}
+	}
+
+public:
+	BoardGame(const int& rows=0, const int& cols=0): d_rows(rows), d_cols(cols), d_turn(0) {
+		//add empty dummy group
+		d_b = Board<T>(d_rows, d_cols);		
+		groupInitialization();
 	};
 
 	void playAt(Position& pos){
@@ -49,8 +58,7 @@ public:
 		//TODO
 
 		//get the adjacent tiles
-		vector<T> adjacents = d_b.getAdjacent(pos.getX(), pos.getY());
-		
+		vector<pair<T,char> > adjacents = d_b.getAdjacent(pos.getX(), pos.getY());
 		//NONE? This is an independent
 		if(adjacents.size() == 0){
 			//add tile to dummy group
@@ -59,46 +67,62 @@ public:
 			// place tile
 			d_b.placeTile(pos.getX(), pos.getY(), d_dum);
 		} else if(adjacents.size() == 1) {
-		//ONE: creating or increasing size
 			//is adj part of the dummy group
-			if(adjacents[0] == d_dum){
+			//the element adjacent
+			pair<T,char> adjLabel = adjacents[0];
+
+			if(adjLabel.first == d_dum){
 				//Create a new group if possible
 				if ( canAddNewGroup() ) {
+					//Get our new group
+					T groupLabel = addNewGroup();
 					//Remove tile from dummy group 
-					//Group<T>* dummy = d_groups.at(d_dum);
 					d_groups.at(d_dum)->remove(pos.getX(), pos.getY());
 					// place tile
-					d_b.placeTile(pos.getX(), pos.getY(), addNewGroup());
-					//add adjacent tile to new group
+					d_b.placeTile(pos.getX(), pos.getY(), groupLabel);
+					//add adjacent tile to new group *THE HARD PART*
+					Position adjPos = getAdjPosition(pos, adjLabel.second);
+					d_b.placeTile(adjPos.getX(), adjPos.getY(), groupLabel);
+					d_groups.at(d_dum)->remove(adjPos.getX(), adjPos.getY());
+
+					//add both tiles to this group
+					d_groups.at(groupLabel)->add(pos.getX(), pos.getY());
+					d_groups.at(groupLabel)->add(adjPos.getX(), adjPos.getY());
 				} else {
 					cout << "Error: No valid groups left to choose from" << endl;
 				}
 			} else { //YES
 				// assign tile to group
-				d_groups.at(adjacents[0])->add(pos.getX(), pos.getY());
+				d_groups.at(adjLabel.first)->add(pos.getX(), pos.getY());
 				// place tile
-				d_b.placeTile(pos.getX(), pos.getY(), adjacents[0]);
+				d_b.placeTile(pos.getX(), pos.getY(), adjLabel.first);
 			}
 			
-		} /** else {
-		//2+: increase size or merge
+		}  else {
+			//A SORTED GROUP OF THE ADJACENT GROUPS. NEEDED TO REPLACE TILES
+			vector <Group<T>* > adjGroups = getAdjGroups(adjacents);
 			//is there more than one group in the adj. list?
-				//NO
-				//increase group size by 1 (unless same group again)
+			if (adjGroups.size() == 1){
 				// assign tile to group
-				//YES: MERGER 
-				// get list of groups involved - groups only counted once, even if there is more than one tile in the list
-				// sort by group size
-				// For each (groups - 1)
-					//Larger group eats smaller group
-						//assign all tiles from one group to the next
-						//increase the size of the larger group by that of the smaller
-						//add all tiles from smaller group to larger group (placeTile for all elements with new group key)
-					//add the (now empty) smaller group back into the valid groups list
-			// place tile
-			d_b.placeTile(pos.getX(), pos.getY(), adjacents[0]);
+				adjGroups[0]->add(pos.getX(), pos.getY());
+
+				// place tile
+				d_b.placeTile(pos.getX(), pos.getY(), adjGroups[0]->getLabel());
+			} else {
+				//merge the following sorted groups
+				for (int i=1; i<adjGroups.size(); i++){
+					//setTiles
+					d_b = adjGroups[i]->setTiles(d_b, adjGroups[0]->getLabel());
+					//largest is always first
+					adjGroups[0]->addAll(adjGroups[i]);
+					
+					d_groups.erase(adjGroups[i]->getLabel());
+				}
+				cout << "good" << endl;
+				d_b.placeTile(pos.getX(), pos.getY(), adjGroups[0]->getLabel());
+			}
 		}
-		**/
+		
 		//a turn has taken place
 		d_turn++;
 	};
@@ -136,6 +160,58 @@ public:
 		}
 	};
 
+	//In the case where we remove some element from the dummy group and make a new real group.
+	Position getAdjPosition(Position pos, char orientation){
+		if (orientation == 'u'){
+			return Position(pos.getX(), (pos.getY()-1));
+		} else if (orientation == 'd'){
+			return Position(pos.getX(), (pos.getY()+1));
+		} else if (orientation == 'l'){
+			return Position((pos.getX()-1), pos.getY());
+		} else if (orientation == 'r'){
+			return Position((pos.getX()+1), pos.getY());
+		}
+	};
+
+	//Give us a sorted list of unique groups adjacent to the tile in play
+	vector<Group<T>* > getAdjGroups(const vector<pair<T,char> >& adj){
+		vector<Group<T>* > tmpGrps;
+		int current = 0;
+		int max = 0;
+		int maxElem = 0;
+		for(int i=0; i<adj.size(); i++){
+			//check for uniqueness
+			if(find(tmpGrps.begin(), tmpGrps.end(), d_groups.at( adj[i].first )) == tmpGrps.end()) {
+				tmpGrps.push_back(d_groups.at( adj[i].first ));
+				current = d_groups.at( adj[i].first )->getSize();
+				if( current > max){
+					maxElem = i;
+					max = current;
+				}
+			} 
+		}
+
+		//due to the lack of a working sort, we just place the largest group first, it will absorb all other groups.
+		vector<Group<T>* > adjGroups;
+		Group<T>* maxGrp = tmpGrps[maxElem];
+
+		adjGroups.push_back(maxGrp);
+		for(int i=0; i<tmpGrps.size(); i++){
+			//Don't add the max group twice.
+			if(i != maxElem){
+				adjGroups.push_back(tmpGrps[i]);
+			}
+		}
+
+		return adjGroups;
+	}
+
+	void clearBoard(){
+		d_b.clear();
+		groupInitialization();
+	}
+
+	/**************************************************** PRINTING FUNCTIONS ***********************************************************/
 	void printValids(){
 		cout << "Valid groups left to choose from are: ";
 		for (int i=0; i<d_validGroups.size(); i++){
@@ -153,6 +229,7 @@ public:
 		cout << endl;
 	};
 
+	
 	friend ostream& operator<<( ostream& _os, const BoardGame& _b){
 		_os << "------------BOARD Turn: " << _b.d_turn << "------------" << endl;
 		_os << _b.d_b << "-------------------------------------" << endl;
