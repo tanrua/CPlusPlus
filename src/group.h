@@ -1,11 +1,12 @@
 #ifndef GROUP
 #define GROUP
 
+
 #include <iostream>
 #include <list>
 #include <set>
 #include <utility>
-
+#include "board.h"
 using namespace std;
 
 template <class T> class Group {
@@ -43,14 +44,23 @@ public:
         };
 		              
         //Copy over the contents of the other group
-        void addAll(const Group<T>& other) {
-			if (other.d_size > 0) {
+        void addAll(Group<T>* other) {
+			if (other->d_size > 0) {
                    //iterate through other and add to this
-                   for (set<pair<char, int> >::iterator it=other.d_tiles.begin(); it!=other.d_tiles.end(); it++){
+                   for (set<pair<char, int> >::iterator it=other->d_tiles.begin(); it!=other->d_tiles.end(); it++){
                            add(*it) ;
                    }
            }
+			other->clear();
         };
+
+		//Change the labels of all the tiles in the group
+		Board<T> setTiles(Board<T> b, T label) {
+			for (set<pair<char, int> >::iterator it=d_tiles.begin(); it!=d_tiles.end(); it++){
+				b.placeTile(it->first, it->second, label);
+            }
+			return b;
+		}
 
         //Check if this group contains the given tile
         bool contains(const char& col, const int& row) {
@@ -76,6 +86,12 @@ public:
 			}
         };
 
+		void clear(){
+			d_size = 0;
+			d_tiles.clear();
+			d_age = 0;
+		};
+
 		/************************************ Getters and Setters *****************************************************/
 		//return the size of this group
         int& getSize() {
@@ -89,12 +105,17 @@ public:
 
         //Return the label of this group
         T& getLabel() {
-                return d_label ;
+            return d_label ;
+        };
+
+		 //Return the label of this group
+        set< pair<char, int > > getTiles() {
+            return d_tiles ;
         };
 
 		//return the size of this group
         void setSize(const int& _size) {
-                d_size=_size;
+             d_size=_size;
         };
 
 		//return what turn the group was created on
@@ -104,9 +125,13 @@ public:
 
         //Return the label of this group
         void setLabel(const T& _label) {
-                d_label=_label;
+            d_label=_label;
         };
 
+		friend ostream& operator<<( ostream& _os, const Group<T>& _b) {
+			_os << "Group '" << d_label << "' is of size: " << d_size << endl;
+			return _os;
+		};
 		void print(){
 			cout << "Group '" << d_label << "' is of size: " << d_size << endl;
 		};
