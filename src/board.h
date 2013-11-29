@@ -3,7 +3,6 @@
 
 #include <list>
 #include <vector>
-#include "group.h"
 
 using namespace std;
 
@@ -40,34 +39,38 @@ public:
 
 
 	// up to 4 in the list, clockwise with no wrap.
-	vector<T> getAdjacent(const char& x, const int& y){
+	vector<pair<T,char> > getAdjacent(const char& x, const int& y){
 		// * * * * *
 		// * * u * *
 		// * l x r *
 		// * * d * *
 		// * * * * *
-
-		vector<T> adjacent; 
+		pair<T,char> item;
+		vector<pair<T,char> > adjacent; 
 		//up
 		if( (y > 0) && adjCheck(getTileAt(x, (y-1))) ){
-			adjacent.push_back(getTileAt(x, (y-1)));
+			item = make_pair(getTileAt(x, (y-1)), 'u');
+			adjacent.push_back(item);
 		} 
 		
 		//right
 		char right = x+1;
 		if( (charMap(right) < d_cols) && adjCheck(getTileAt(right, y)) ) {
-			adjacent.push_back(getTileAt((right), y));
+			item = make_pair( getTileAt(right, y), 'r');
+			adjacent.push_back(item);
 		}
 		
 		//down
 		if ( (y+1 < d_rows)  && adjCheck(getTileAt(x, (y+1))) )  {
-			adjacent.push_back(getTileAt(x, (y+1)));
+			item = make_pair(getTileAt(x, (y+1)), 'd');
+			adjacent.push_back(item);
 		}
 		
 		//left
 		char left = x-1;
 		if( (charMap(left) >= 0) && adjCheck(getTileAt((left), y)) ) {
-			adjacent.push_back(getTileAt((left), y));
+			item = make_pair(getTileAt(left, y), 'l');
+			adjacent.push_back(item);
 		}
 
 		return adjacent;
@@ -97,6 +100,15 @@ public:
 		// will turn to != T Group::getDummy();
 		return item != 0;
 	};
+
+	void clear(){
+		for(int j=0; j<d_rows; j++){
+			for(int i=0; i<d_cols; i++){
+				d_board[i][j] = 0;
+			}
+			cout << endl;
+		}
+	}
 
 };
 
