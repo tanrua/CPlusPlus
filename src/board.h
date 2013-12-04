@@ -18,6 +18,10 @@ public:
 		}
 	};
 
+	~Board(){
+		d_board.~vector();
+	}
+
 	int charMap (const char& item){
 		if ((item > 64)&&(item < 91)){
 			return item-65;
@@ -101,6 +105,18 @@ public:
 		return item != 0;
 	};
 
+	bool goodPos(const unsigned char& x, const int& y){
+		if((charMap(x) < 0) || (charMap(x) > d_cols-1)){
+			return false;
+		} else if ((y < 0) || (y > d_rows-1)){
+			return false;
+		} else if (getTileAt(x, y) != 0){
+			return false;
+		} else {
+			return true;
+		}
+	};
+
 	void clear(){
 		for(int j=0; j<d_rows; j++){
 			for(int i=0; i<d_cols; i++){
@@ -108,11 +124,11 @@ public:
 			}
 			cout << endl;
 		}
-	}
+	};
 
 };
 
-class Position {
+struct Position {
 	unsigned char d_x;
 	int d_y;
 public:
@@ -126,7 +142,7 @@ public:
 	void operator=(const Position& _p){
 		d_x = _p.d_x;
 		d_y = _p.d_y;
-	}
+	};
 
 };
 
