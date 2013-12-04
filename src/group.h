@@ -10,13 +10,18 @@
 using namespace std;
 
 template <class T> class Group {
+protected:
         int d_size;
 		T d_label;
 		int d_age;
+		static const int d_endGame = 12; //the size of the group that ends the game
         set< pair<char, int > > d_tiles;
 public:
 		Group(const T& _label, const int& _age=0, const int& _size=0): d_label(_label), d_age(_age), d_size(_size){};
-
+		/** causes problems? why? set destructor problems?
+		~Group(){
+			d_tiles.~set();
+		}**/
         //Not sure WTF this is supposed to do...
         T getDummy(){
 			if (typeid(T) == typeid(int)) {
@@ -33,25 +38,33 @@ public:
         };
 
         //add the given tile to the group
-		void add(const unsigned char& col, const int& row){
-                add(make_pair(col, row));
+		bool add(const unsigned char& col, const int& row){
+                return add(make_pair(col, row));
         };
 
         //Add the given tile to the group
-        void add(const pair<char, int>& tile){
+        bool add(const pair<char, int>& tile){
                 d_tiles.insert(tile) ;
-                d_size++ ;
+				if (d_label != getDummy()){
+					d_size++ ;
+				}
+				if(d_size >= d_endGame){
+					return true;
+				}
+				return false;
         };
 		              
         //Copy over the contents of the other group
-        void addAll(Group<T>* other) {
+        bool addAll(Group<T>* other) {
+			bool endGameSize = true;
 			if (other->d_size > 0) {
                    //iterate through other and add to this
                    for (set<pair<char, int> >::iterator it=other->d_tiles.begin(); it!=other->d_tiles.end(); it++){
-                           add(*it) ;
+                           endGameSize = add(*it) ;
                    }
            }
 			other->clear();
+			return endGameSize;
         };
 
 		//Change the labels of all the tiles in the group
